@@ -6,6 +6,7 @@
 # -d <root dir to add>, defaults to current directory
 # -o <output dir of cscope.files>, will use last instance of -o, defaults to current dir
 # -e <extension>, by default will use *.c, *.h, *.cpp, *.hpp, *.s, and *.S
+# -b <additional cscope flags besides b> build database
 out_name="cscope.files";
 
 dirs[0]=$(pwd);
@@ -14,7 +15,9 @@ exts_set=0;
 out_dir=${dirs[0]};
 out_path="$out_dir/$out_name";
 dir_index=0;
-while getopts ":d:o:e:" opt; do
+build_db=0;
+build_flags="";
+while getopts ":d:o:e:b:" opt; do
     case $opt in
         d)
             dir=$(readlink -f $OPTARG);
@@ -35,6 +38,10 @@ while getopts ":d:o:e:" opt; do
             ext=$OPTARG;
             exts+=($ext);
             echo "-e added extension *.$ext";
+            ;;
+        b)
+            build_db=1;
+            args=$OPTARG;
             ;;
         \?)
             echo "Invalid option: -$OPTARG";
@@ -60,7 +67,16 @@ find_names=${find_names%" -o "};   # strip trailing -o
 # generate the command to run
 for dir in "${dirs[@]}"; do
     cmd="find $dir -type f \( $find_names \) -print >> $out_path";
-    echo $cmd
+    #echo $cmd;
     eval $cmd;
 done
 
+# if build desired
+if [[ $build_db -eq 1 ]]; then
+    curr_dir=$(pwd);
+    cscope_flags="-b$arg";
+    cd $out_dir;
+    cscope $cscope_flags;
+    cd $curr_dir;
+    #echo "Generated cscope files via $cscope_flags"; 
+fi
