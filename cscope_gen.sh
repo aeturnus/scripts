@@ -8,7 +8,14 @@
 # -e <extension>, by default will use *.c, *.h, *.cpp, *.hpp, *.s, and *.S
 # -b <additional cscope flags besides b> build database
 out_name="cscope.files";
-
+verbose=0;
+logprint()
+{
+    if [[ $verbose -eq 1 ]]; then
+        echo $1;
+    fi
+    return 0;
+}
 dirs[0]=$(pwd);
 exts=('c' 'h' 'cpp' 'hpp' 's' 'S');
 exts_set=0;
@@ -17,18 +24,18 @@ out_path="$out_dir/$out_name";
 dir_index=0;
 build_db=0;
 build_flags="";
-while getopts ":d:o:e:b:" opt; do
+while getopts ":d:o:e:b:v" opt; do
     case $opt in
         d)
             dir=$(readlink -f $OPTARG);
             dirs[$dir_index]=$dir;
             dir_index=$((dir_index+1));
-            echo "-d added $dir!";
+            logprint "-d added $dir!";
             ;;
         o)
             out_dir=$(readlink -f $OPTARG);
             out_path="$out_dir/$out_name";
-            echo "-o outputting to $out_path";
+            logprint "-o outputting to $out_path";
             ;;
         e)
             if [ $exts_set -eq 0 ]; then
@@ -37,19 +44,23 @@ while getopts ":d:o:e:b:" opt; do
             fi
             ext=$OPTARG;
             exts+=($ext);
-            echo "-e added extension *.$ext";
+            logprint "-e added extension *.$ext";
             ;;
         b)
             build_db=1;
             args=$OPTARG;
             ;;
+        v)
+            verbose=1
+            logprint "-v verbose output on"
+            ;;
         \?)
-            echo "Invalid option: -$OPTARG";
+            logprint "Invalid option: -$OPTARG";
             ;;
     esac
 done
-echo "Dirs: ${dirs[@]}";
-echo "Exts: ${exts[@]}";
+logprint "Dirs: ${dirs[@]}";
+logprint "Exts: ${exts[@]}";
 
 mkdir -p $out_dir;
 
@@ -67,7 +78,7 @@ find_names=${find_names%" -o "};   # strip trailing -o
 # generate the command to run
 for dir in "${dirs[@]}"; do
     cmd="find $dir -type f \( $find_names \) -print >> $out_path";
-    #echo $cmd;
+    logprint $cmd;
     eval $cmd;
 done
 
@@ -78,5 +89,5 @@ if [[ $build_db -eq 1 ]]; then
     cd $out_dir;
     cscope $cscope_flags;
     cd $curr_dir;
-    #echo "Generated cscope files via $cscope_flags"; 
+    logprint "Generated cscope files via $cscope_flags"; 
 fi
