@@ -50,14 +50,16 @@ if [ -f $out_path ]; then
     mv $out_path "$out_path.bak"; # backup cscope.files if they exist
 fi
 
+# generate the names to find
+find_names="";
+for ext in "${exts[@]}"; do
+    find_names+="-name '*.$ext' -o ";
+done
+find_names=${find_names%" -o "};   # strip trailing -o
+
 # generate the command to run
 for dir in "${dirs[@]}"; do
-    cmd="find $dir -type f \( ";
-    for ext in "${exts[@]}"; do
-        cmd+="-name '*.$ext' -o ";
-    done
-    cmd=${cmd%" -o "};   # strip trailing -o
-    cmd+=" \) -print >> $out_path";
+    cmd="find $dir -type f \( $find_names \) -print >> $out_path";
     echo $cmd
     eval $cmd;
 done
