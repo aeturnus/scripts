@@ -49,6 +49,7 @@ while getopts ":d:o:e:b:v" opt; do
         b)
             build_db=1;
             args=$OPTARG;
+            logprint "cscope args: -b$args"
             ;;
         v)
             verbose=1
@@ -85,7 +86,7 @@ done
 # if build desired
 if [[ $build_db -eq 1 ]]; then
     curr_dir=$(pwd);
-    cscope_flags="-b$arg";
+    cscope_flags="-b$args";
     cd $out_dir;
     cscope $cscope_flags;
     cd $curr_dir;
