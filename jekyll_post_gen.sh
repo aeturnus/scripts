@@ -34,4 +34,5 @@ echo "layout: post" >> $file
 echo "author: $USER" >> $file
 echo "categories: []" >> $file
 echo "tags: []" >> $file
+echo "excerpt_separator: <!--more-->" >> $file
 echo "---" >> $file
